@@ -1,0 +1,17 @@
+{
+  "name": "dev.cheeksy.visittracker",
+  "displayName": "Visit Tracker",
+  "version": "0.1.0",
+  "unity": "2022.3",
+  "description": "Drop-in prefab that persistently tracks how many distinct days each player has visited your world and their total time spent in it, using VRChat Persistence. Includes an optional stats display and a simple read API for other Udon scripts.",
+  "author": {
+    "name": "Cheeks",
+    "url": "https://cheeksy.dev"
+  },
+  "documentationUrl": "https://github.com/notreallycheeks/vrc-visit-tracker",
+  "changelogUrl": "https://github.com/notreallycheeks/vrc-visit-tracker/releases",
+  "licensesUrl": "https://github.com/notreallycheeks/vrc-visit-tracker/blob/main/LICENSE",
+  "vpmDependencies": {
+    "com.vrchat.worlds": ">=3.7.4"
+  }
+}

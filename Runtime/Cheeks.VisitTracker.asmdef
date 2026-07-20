@@ -1,0 +1,21 @@
+{
+    "name": "Cheeks.VisitTracker",
+    "rootNamespace": "",
+    "references": [
+        "VRC.SDK3",
+        "VRC.SDKBase",
+        "VRC.Udon",
+        "UdonSharp.Runtime",
+        "VRC.Udon.Serialization.OdinSerializer",
+        "Unity.TextMeshPro"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
