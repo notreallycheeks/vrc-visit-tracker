@@ -1,0 +1,3 @@
+# Unity generates this when the repo is embedded in a project as a package;
+# DEVELOPMENT.md itself is deliberately meta-less because it never ships.
+DEVELOPMENT.md.meta

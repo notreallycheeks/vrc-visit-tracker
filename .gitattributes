@@ -1,4 +1,6 @@
 DEVELOPMENT.md export-ignore
+DEVELOPMENT.md.meta export-ignore
+.gitignore export-ignore
 README.md export-ignore
 README.md.meta export-ignore
 .gitattributes export-ignore
