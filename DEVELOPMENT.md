@@ -1,5 +1,9 @@
 # Development notes (not shipped in the VPM zip)
 
+**Packaging rule:** release zips must contain no `.md` files. `README.md` (and its
+`.meta`), `DEVELOPMENT.md`, and `.gitattributes` are all export-ignored; check any
+new docs get the same treatment before tagging a release.
+
 This package was authored entirely outside Unity. The Unity-side assets
 (program asset, prefab, metas) were hand-written against known-good templates
 (VideoTXL / AudioLink package layouts, attach-to-me Udon wiring), so the first
@@ -40,6 +44,45 @@ Unity import needs a verification pass.
 - Stay across midnight UTC → day count increments in-session.
 - Second client: remote player's values readable via `GetDaysVisited(player)`
   after their restore.
+
+## 0.2.0 additions to verify on first import
+
+New API surface that has never been compiled — check exposure to Udon:
+
+1. `PlayerData.SetUInt` / `TryGetUInt` / `SetBytes` / `TryGetBytes` (the docs list
+   UInt and Bytes among supported types, but the exact method names are unverified).
+2. `Networking.GetNetworkDateTime()` (VRC.SDKBase) — used for epoch timestamps AND
+   the day-number calc (0.1.0 used `DateTime.UtcNow`; behavior change is intended).
+3. Session flow test (Build & Test keeps persistence only while the client stays
+   open, so use two joins in one client session or an uploaded world): join →
+   `cvt_sessionStart`/`cvt_lastSeen` set; leave + rejoin → one 8-byte record lands
+   in `cvt_sessions` whose leave time ≈ last heartbeat; cap: set
+   `maxStoredSessions` to 2 and make 3 sessions → oldest dropped.
+
+## Companion package: vrc-visit-terminal (dev.cheeksy.visitterminal)
+
+The in-world moderation terminal lives in the sibling repo `vrc-visit-terminal`
+(same hand-authoring pattern, depends on this package `^0.2.0`). That repo
+deliberately ships no docs, so its first-import checklist lives here:
+
+1. `Cheeks.VisitTerminal` asmdef resolves its `Cheeks.VisitTracker` reference and
+   both scripts compile (they call the 0.2.0 session API).
+2. Program assets `VisitTerminal.asset` / `VisitTerminalRow.asset` compile and
+   link, same as items 2–3 of the first-import checklist above.
+3. `Prefabs/VisitTerminal.prefab`: canvas shows roster; the row template's Button
+   targets the ROW UdonBehaviour (`_OnRowClick`), the Back button targets the
+   TERMINAL UdonBehaviour (`_Back`) — verify both persistent calls survived the
+   U# import pass.
+4. Udon exposure gambles to confirm: `Instantiate(GameObject)` +
+   `Transform.SetParent(t, false)` + `GetComponent<VisitTerminalRow>()` (row
+   spawning), `RectTransform.anchoredPosition`/`sizeDelta` setters (list layout),
+   `DateTime.MinValue.AddTicks(...).AddSeconds(...)` (timestamp formatting),
+   `VRCPlayerApi.GetPlayers` / `GetPlayerById`, `player.isInstanceOwner`.
+5. Scene wiring: drop in a VisitTracker prefab + a VisitTerminal prefab, assign
+   the terminal's **Visit Tracker** field, enter play mode → roster lists the
+   ClientSim player; click row → detail view shows "This session"; Back returns.
+6. Access gating: with `allowEveryone` off, the ClientSim local player is master
+   so the canvas stays on; untick `allowInstanceMaster` too → canvas hides.
 
 ## Releasing an update
 
