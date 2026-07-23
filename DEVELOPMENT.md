@@ -45,19 +45,34 @@ Unity import needs a verification pass.
 - Second client: remote player's values readable via `GetDaysVisited(player)`
   after their restore.
 
-## 0.2.0 additions to verify on first import
+## First-import verification — DONE 2026-07-22 (testbed project)
 
-New API surface that has never been compiled — check exposure to Udon:
+Verified in `D:\repositories\cheeks\vrc-vpm-testbed` (SDK 3.10.4, Unity
+2022.3.22f1, ClientSim play mode; both packages junctioned into Packages/):
+U# compile clean, prefab wiring intact, persistence restore/write across play
+sessions, session finalize-on-next-join with heartbeat leave time, byte-pack
+round trip, in-session UTC day rollover, terminal roster/detail/back flow.
+`PlayerData.SetUInt/TryGetUInt/SetBytes/TryGetBytes` and
+`Networking.GetNetworkDateTime()` all exist and are exposed.
 
-1. `PlayerData.SetUInt` / `TryGetUInt` / `SetBytes` / `TryGetBytes` (the docs list
-   UInt and Bytes among supported types, but the exact method names are unverified).
-2. `Networking.GetNetworkDateTime()` (VRC.SDKBase) — used for epoch timestamps AND
-   the day-number calc (0.1.0 used `DateTime.UtcNow`; behavior change is intended).
-3. Session flow test (Build & Test keeps persistence only while the client stays
-   open, so use two joins in one client session or an uploaded world): join →
-   `cvt_sessionStart`/`cvt_lastSeen` set; leave + rejoin → one 8-byte record lands
-   in `cvt_sessions` whose leave time ≈ last heartbeat; cap: set
-   `maxStoredSessions` to 2 and make 3 sessions → oldest dropped.
+Hard-won UdonSharp facts (do not regress):
+
+1. Every U# assembly REQUIRES an `UdonSharpAssemblyDefinition` asset next to its
+   asmdef (`*.USharp.asset`, script guid 5136146375e9a0a498a72a0091b40cc1) —
+   without it U# refuses to compile the scripts at all.
+2. `%` (modulus) is NOT exposed for `uint` (it is for `int`). Keep duration math
+   in int/long.
+3. Numeric casts compile to `System.Convert.*`, which THROWS on overflow instead
+   of truncating — `(byte)(someUint >> 16)` crashes at runtime. Mask first:
+   `(byte)((v >> 16) & 0xFFu)`.
+4. U# rewrites the program `.asset` files in place after compiling (links
+   `serializedUdonProgramAsset`, `compiledVersion: 2`, field defs). VideoTXL
+   ships this compiled state, so commit it.
+
+Still outstanding: real-client Build & Test (VRCUiShape laser/desktop clicks were
+not exercised — ClientSim handlers were invoked directly), a 2-client remote-read
+test, `maxStoredSessions` cap trim, and the registry release of 0.2.0 + terminal
+0.1.0.
 
 ## Companion package: vrc-visit-terminal (dev.cheeksy.visitterminal)
 

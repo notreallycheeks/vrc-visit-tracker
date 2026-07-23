@@ -286,10 +286,12 @@ namespace Cheeks.VisitTracker
 
         private void WriteUInt(byte[] buffer, int offset, uint value)
         {
-            buffer[offset] = (byte)(value >> 24);
-            buffer[offset + 1] = (byte)(value >> 16);
-            buffer[offset + 2] = (byte)(value >> 8);
-            buffer[offset + 3] = (byte)value;
+            // The & 0xFF masks are load-bearing: Udon's numeric casts go through
+            // System.Convert, which throws on overflow instead of truncating.
+            buffer[offset] = (byte)((value >> 24) & 0xFFu);
+            buffer[offset + 1] = (byte)((value >> 16) & 0xFFu);
+            buffer[offset + 2] = (byte)((value >> 8) & 0xFFu);
+            buffer[offset + 3] = (byte)(value & 0xFFu);
         }
 
         private uint ReadUInt(byte[] buffer, int offset)
